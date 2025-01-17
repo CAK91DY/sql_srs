@@ -2,43 +2,56 @@ import streamlit as st
 import pandas as pd
 import duckdb
 
-st.write("""
-# SQL APP
-An intelligent application for testing SQL queries.
+# Table 1 : Exemple de données des clients
+client = {
+    "client_id": [1, 2, 3],
+    "name": ["Alice", "Bob", "Charlie"],
+    "age": [25, 30, 35],
+}
+client = pd.DataFrame(client)
+
+# Table 2 : Exemple de données des commands
+commands = {
+    "order_id": [101, 102, 103],
+    "client_id": [1, 2, 4],  # Remarque : le client_id 4 ne correspond pas à la table df1
+    "amount": [250, 150, 300],
+}
+commands = pd.DataFrame(commands)
+
+answer = ("""
+    SELECT * FROM client l
+    JOIN commands c
+    ON l.client_id = c.client_id
 """)
+solution = duckdb.sql(answer).df()
 
-option = st.selectbox(
-    "What would you like review ?",
-    ("Joins", "GroupBy", "Windows functions"),
-    index=None,
-    placeholder="Select a theme...",
-)
 
-st.write("You selected:", option)
+with st.sidebar:
+    option = st.selectbox(
+        "What would you like review ?",
+        ("Joins", "GroupBy", "Windows functions"),
+        index=None,
+        placeholder="Select a theme...",
+    )
 
-data = {"a": [1, 2, 3], "b": [4, 5, 6]}
-df = pd.DataFrame(data)
+    st.write("You selected:", option)
 
-tab1, tab2, tab3 = st.tabs(["Cat", "Dog", "Owl"])
+st.header("Enter your code:")
+query = st.text_area(label="Votre code SQL ici", key="user_input")
+if query:
+    result = duckdb.sql(query).df()
+    st.dataframe(result)
 
+tab1, tab2 = st.tabs(["Tables", "Solution"])
 with tab1:
-    sql_query = st.text_area(label="Entrez votre requête SQL")
+    st.write("table: clients")
+    st.dataframe(client)
+    st.write("table: commands")
+    st.dataframe(commands)
+    st.write("expected:")
+    st.dataframe(solution)
 
-    if sql_query.strip():  # Vérification si une requête est entrée
-        try:
-            # Exécution de la requête SQL
-            result = duckdb.query(sql_query).to_df()
-            st.dataframe(result)
-        except Exception as e:
-            # Gestion des erreurs SQL
-            st.error(f"Erreur dans la requête SQL : {e}")
-    else:
-        st.warning(f"Veuillez entrer une requête SQL.")
 
 with tab2:
-    st.header("A dog")
-    st.image("https://static.streamlit.io/examples/dog.jpg")
+    st.write(answer)
 
-with tab3:
-    st.header("An owl")
-    st.image("https://static.streamlit.io/examples/owl.jpg")
