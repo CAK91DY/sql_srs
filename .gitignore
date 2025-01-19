@@ -1,3 +1,5 @@
 .idea/
 venv/
 *.csv
+test_add.py
+duckdb_db.py
