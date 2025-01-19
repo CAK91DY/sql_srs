@@ -3,6 +3,7 @@ import os
 import logging
 import duckdb
 import streamlit as st
+import ast
 
 if "data" not in os.listdir():
     logging.debug(os.listdir())
